@@ -1,7 +1,7 @@
 {
   "name": "SurgeAgent-v1",
   "version": "1.0.0",
-  "created_at": "2026-03-14T20:23:17.416543",
+  "created_at": "2026-03-14T20:34:44.046641",
   "wallet": "0x1D4959343D05934FCc17cD86b8AEE0bdB3A826C6",
   "capabilities": [
     "spot_trading",
@@ -16,6 +16,6 @@
     "max_daily_loss": 0.2,
     "max_leverage": 1.0
   },
-  "signature": "0f9dd8835316cfda43e1c4b82683cf4680718407e081576bd3b63a8868844af7647a286be52a396c83e0604cf9bf68a74218f7c28d1d188196925e03807403e41b",
-  "identity_hash": "5181a644f2b60b646c1648e1fa94fe3963f5735086e266352fd174ea96320885"
+  "signature": "0f8fbd9fb01e914cff61779ef0463e95613fd10787a6d8040bc16d70b3bec0e27a212d85c4487f9014e84435f344ddca5402495071a1d7b10fc1a187f6039c311c",
+  "identity_hash": "5a49c6c80e33eafd5e8e5d2ac1eb0071701c25b00d3e7633864778bfa2f299cb"
 }

@@ -112,7 +112,7 @@ class TrustLayer:
             "action": trade_intent.get("action", ""),
             "outcome": outcome,       # "profit" / "loss" / "stopped_out"
             "pnl_usd": pnl,
-            "pnl_pct": (pnl / trade_intent.get("max_usd", 1)) * 100
+            "pnl_pct": (pnl / trade_intent.get("max_usd", 1)) * 100 if trade_intent.get("max_usd", 0) != 0 else 0.0
         }
         
         # Sign the reputation signal
