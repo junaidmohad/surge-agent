@@ -4,6 +4,7 @@ import anthropic
 import requests
 import json
 from datetime import datetime
+from strategy import RiskManager
 
 # Load environment variables
 load_dotenv()
@@ -90,13 +91,31 @@ if __name__ == "__main__":
     print("🤖 Surge Agent Starting...")
     print("📊 Fetching live market data...\n")
     
+    # Initialize risk manager with $10,000 portfolio
+    rm = RiskManager(portfolio_value=10000)
+    
     prices = get_live_prices()
     
     for symbol, data in prices.items():
         print(f"{'='*40}")
         print(f"💰 {symbol}: ${data['price']:,.2f} ({data['change_24h']:.2f}%)")
+        
+        # Get AI decision
         decision = analyze_market(symbol, data['price'], data['change_24h'])
         print("🧠 AI Decision:")
         print(decision)
-        print()
+        
+        # If AI says BUY, check risk manager
+        if "ACTION: BUY" in decision:
+            risk = rm.get_position_size(symbol, data['price'])
+            if risk["approved"]:
+                print(f"✅ Risk Check PASSED:")
+                print(f"   Max position: ${risk['max_usd']}")
+                print(f"   Stop loss:    ${risk['stop_loss']}")
+                print(f"   Take profit:  ${risk['take_profit']}")
+            else:
+                print(f"❌ Risk Check FAILED: {risk['reason']}")
+        
+        # Log the decision
         log_decision(symbol, data['price'], data['change_24h'], decision)
+        print()
