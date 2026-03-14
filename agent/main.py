@@ -2,6 +2,8 @@ from dotenv import load_dotenv
 import os
 import anthropic
 import requests
+import json
+from datetime import datetime
 
 # Load environment variables
 load_dotenv()
@@ -59,6 +61,31 @@ def analyze_market(symbol: str, price: float, change_24h: float) -> str:
     )
     return message.content[0].text
 
+def log_decision(symbol: str, price: float, change_24h: float, decision: str):
+    """Save trading decision to a log file."""
+    log_entry = {
+        "timestamp": datetime.now().isoformat(),
+        "symbol": symbol,
+        "price": price,
+        "change_24h": round(change_24h, 2),
+        "decision": decision
+    }
+    
+    # Load existing log or start fresh
+    log_file = "trading_log.json"
+    if os.path.exists(log_file):
+        with open(log_file, "r") as f:
+            log = json.load(f)
+    else:
+        log = []
+    
+    # Append new entry and save
+    log.append(log_entry)
+    with open(log_file, "w") as f:
+        json.dump(log, f, indent=2)
+    
+    print(f"📝 Decision logged at {log_entry['timestamp']}")
+
 if __name__ == "__main__":
     print("🤖 Surge Agent Starting...")
     print("📊 Fetching live market data...\n")
@@ -72,3 +99,4 @@ if __name__ == "__main__":
         print("🧠 AI Decision:")
         print(decision)
         print()
+        log_decision(symbol, data['price'], data['change_24h'], decision)
