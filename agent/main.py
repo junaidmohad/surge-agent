@@ -39,22 +39,45 @@ def get_live_prices() -> dict:
     return result
 
 def analyze_market(symbol: str, price: float, change_24h: float) -> str:
-    """Ask Claude AI to make a trading decision."""
+    """Ask Claude AI to make a trading decision with clear criteria."""
+
+    # Determine market context to help Claude decide
+    if change_24h <= -5:
+        market_context = "Significant dip — potential oversold bounce opportunity."
+    elif change_24h <= -2:
+        market_context = "Moderate pullback — possible entry if trend is intact."
+    elif change_24h >= 5:
+        market_context = "Strong upward momentum — possible breakout continuation."
+    elif change_24h >= 2:
+        market_context = "Mild positive momentum — monitor for trend confirmation."
+    else:
+        market_context = "Low volatility consolidation — await clearer signal."
+
     message = client.messages.create(
         model="claude-haiku-4-5-20251001",
         max_tokens=256,
         messages=[{
             "role": "user",
-            "content": f"""You are a trading agent. Given this market data:
-            - Asset: {symbol}
-            - Current price: ${price:,.2f}
-            - 24h price change: {change_24h:.2f}%
-            
-            Should I BUY, SELL, or HOLD?
-            Reply in this exact format:
-            ACTION: [BUY/SELL/HOLD]
-            REASON: [one sentence reason]
-            CONFIDENCE: [LOW/MEDIUM/HIGH]"""
+            "content": f"""You are an autonomous crypto trading agent managing a $10,000 portfolio.
+Your job is to make active trading decisions — not just hold.
+
+Market data:
+- Asset: {symbol}
+- Current price: ${price:,.2f}
+- 24h price change: {change_24h:.2f}%
+- Market context: {market_context}
+
+Trading rules:
+- BUY if: price dropped 2–8% (oversold dip), or strong upward momentum (>4% gain) signals a breakout
+- SELL if: price is up 5–15% from a likely recent entry (take profit), or dropping fast (>6% loss, cut losses)
+- HOLD if: market is flat (within -1% to +1%), or signal is unclear
+
+You MUST pick one action. Be decisive. Passive HOLD-only behavior is not acceptable.
+
+Reply in this exact format (no extra text):
+ACTION: [BUY/SELL/HOLD]
+REASON: [one sentence]
+CONFIDENCE: [LOW/MEDIUM/HIGH]"""
         }]
     )
     return message.content[0].text
@@ -158,6 +181,7 @@ def run_pipeline():
 
             else:
                 print(f"❌ Risk Check Failed: {risk['reason']}\n")
+
         else:
             # Still create validation artifact for HOLD/SELL decisions
             intent = trust.create_trade_intent(
