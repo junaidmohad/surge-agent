@@ -120,6 +120,13 @@
             word-break: break-all;
             margin-top: 8px;
         }
+        .btn-row {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
         .refresh-btn {
             background: #0f3460;
             border: 1px solid #4a9eff;
@@ -129,10 +136,27 @@
             cursor: pointer;
             font-family: 'Courier New', monospace;
             font-size: 14px;
-            margin-bottom: 24px;
             transition: all 0.2s;
         }
         .refresh-btn:hover { background: #4a9eff; color: #0a0a0f; }
+        .run-btn {
+            background: #0f3d1f;
+            border: 1px solid #00ff88;
+            color: #00ff88;
+            padding: 10px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        .run-btn:hover:not(:disabled) { background: #00ff88; color: #0a0a0f; }
+        .run-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .run-status {
+            font-size: 13px;
+            color: #00ff88;
+            display: none;
+        }
         .loading { color: #888; text-align: center; padding: 20px; }
         .timestamp { color: #555; font-size: 11px; }
         .score-big { font-size: 36px; font-weight: bold; color: #00ff88; }
@@ -158,7 +182,11 @@
     </div>
 
     <div class="container">
-        <button class="refresh-btn" onclick="loadData()">⟳ Refresh Data</button>
+        <div class="btn-row">
+            <button class="refresh-btn" onclick="loadData()">⟳ Refresh Data</button>
+            <button class="run-btn" id="run-btn" onclick="runAgent()">▶ Run Agent</button>
+            <span class="run-status" id="run-status">⚡ Pipeline running... refresh in 15s</span>
+        </div>
 
         <!-- Agent Info -->
         <div class="grid">
@@ -255,6 +283,29 @@
     </div>
 
     <script>
+        async function runAgent() {
+            const btn = document.getElementById('run-btn');
+            const status = document.getElementById('run-status');
+            btn.disabled = true;
+            btn.textContent = '⏳ Running...';
+            status.style.display = 'inline';
+            try {
+                await fetch('/api/run');
+                // Auto-refresh after 15 seconds to show new results
+                setTimeout(() => {
+                    loadData();
+                    btn.disabled = false;
+                    btn.textContent = '▶ Run Agent';
+                    status.style.display = 'none';
+                }, 15000);
+            } catch (err) {
+                btn.disabled = false;
+                btn.textContent = '▶ Run Agent';
+                status.style.display = 'none';
+                console.error('Error running agent:', err);
+            }
+        }
+
         async function loadData() {
             try {
                 // Load agent state
